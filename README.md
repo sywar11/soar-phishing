@@ -19,7 +19,7 @@ Le rapporteur reçoit un retour, et les autres destinataires voient le message r
 | **analyzer** (Python/FastAPI) | moteur d'analyse, de score et de regroupement, actions, tableau de bord analyste | http://localhost:8000 |
 | **Mailpit** | messagerie de test (toutes les boîtes) + API de recherche et de suppression | http://localhost:8025 (SMTP 1025) |
 | **CoreDNS** | DNS filtrant (domaines confirmés résolus en `0.0.0.0`) | port 1053 |
-| **GoPhish** | campagnes de phishing de démonstration | https://localhost:3333 |
+| **GoPhish** | campagnes de phishing de démonstration | http://localhost:3333 |
 | TheHive (option) | gestion de dossiers : une alerte par campagne | http://localhost:9000 |
 
 ```
@@ -71,7 +71,7 @@ Ouvre http://localhost:5680 et crée le compte propriétaire n8n pour voir les w
 
 ## Démonstration avec GoPhish
 
-1. Récupère le mot de passe admin initial avec `docker logs soar-gophish` (ligne « Please login with the username admin and the password … »), puis connecte-toi sur https://localhost:3333.
+1. Récupère le mot de passe admin initial avec `docker logs soar-gophish` (ligne « Please login with the username admin and the password … »), puis connecte-toi sur http://localhost:3333. L'administration est en http pour éviter l'avertissement du certificat auto-signé ; en contrepartie, `docker-compose.yml` n'ouvre ce port qu'à la machine locale (`127.0.0.1`).
 2. **Sending Profile** : hôte `mailpit:1025`, SMTP From `demo@c0rp-local.test` (l'adresse seule : GoPhish refuse `Nom <adresse>` et le domaine `.example`).
 3. **Landing Page** et **Email Template** : écris ton propre modèle de démonstration (bouton « Import Email » pour partir d'un `.eml`).
 4. **Users & Groups** : quelques adresses `prenom.nom@corp.local`.

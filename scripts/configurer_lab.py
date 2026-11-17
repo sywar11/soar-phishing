@@ -22,8 +22,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 CREDS = ROOT / "identifiants_lab.txt"
 N8N = "http://localhost:5680"
-GOPHISH = "https://localhost:3333/api"
-ctx = ssl._create_unverified_context()  # certificat auto-signé de GoPhish, en local
+GOPHISH = "http://localhost:3333/api"  # admin en http, ouvert seulement sur 127.0.0.1 (docker-compose.yml)
+ctx = ssl._create_unverified_context()  # utile seulement si l'admin GoPhish repasse en https auto-signé
 
 
 def call(req, opener=None):

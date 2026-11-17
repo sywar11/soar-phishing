@@ -6,7 +6,7 @@
 # Ports exposés sur l'hôte :
 #   8025  Mailpit (UI + API)        1025  Mailpit SMTP
 #   5680  n8n (SOAR)                8000  Analyzer (API + tableau de bord analyste)
-#   3333  GoPhish admin (https)     8081  GoPhish serveur de phishing
+#   3333  GoPhish admin (http, local uniquement)     8081  GoPhish serveur de phishing
 #   1053  DNS filtrant (CoreDNS)    9000  TheHive (profil "thehive")
 
 name: soar-phishing
@@ -91,8 +91,11 @@ services:
       - gophish-data:/opt/gophish/data
     environment:
       DB_FILE_PATH: /opt/gophish/data/gophish.db
+      # Interface d'administration en http : pas d'avertissement de certificat auto-signé dans le navigateur.
+      # En contrepartie, le port n'est ouvert qu'à cette machine (127.0.0.1), pas au réseau local.
+      ADMIN_USE_TLS: "false"
     ports:
-      - "3333:3333"
+      - "127.0.0.1:3333:3333"
       - "8081:80"
     depends_on:
       - mailpit
