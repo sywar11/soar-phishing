@@ -398,7 +398,7 @@ S += LI(["Évaluer le score sur des e-mails légitimes récents et anonymisés, 
          "Connexion à Microsoft Graph ou à l'API Gmail pour une purge en production.",
          "Authentification du tableau de bord, de l'API et du webhook."])
 S += [H1("Annexe A : installation"),
-      P("Le code source est disponible sur le dépôt GitHub du projet, privé, avec un accès sur demande : "
+      P("Le code source est disponible sur le dépôt GitHub public du projet : "
         "<b>https://github.com/sywar11/soar-phishing</b>."),
       CODE("git clone https://github.com/sywar11/soar-phishing.git\n"
            "cd soar-phishing\n"
