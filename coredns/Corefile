@@ -1,0 +1,11 @@
+# DNS filtrant : les domaines confirmés malveillants sont ajoutés dans blocklist.hosts
+# par l'analyzer (action "blocage DNS") et résolus vers 0.0.0.0. Rechargement automatique.
+.:53 {
+    hosts /etc/coredns/blocklist.hosts {
+        reload 5s
+        fallthrough
+    }
+    forward . 1.1.1.1 9.9.9.9
+    log
+    errors
+}

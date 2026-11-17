@@ -1,0 +1,117 @@
+{
+  "id": "soarPhishDecide02",
+  "name": "02 - Phishing : décision analyste (purge, DNS, notifications)",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "id": "b1",
+      "name": "Décision analyste",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "5b0f6a2e-7d0e-4c1b-9f53-2a6e1c0d9b11",
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "phishing-decision",
+        "responseMode": "lastNode",
+        "responseData": "firstEntryJson",
+        "options": {}
+      }
+    },
+    {
+      "id": "b2",
+      "name": "Confirmé ou faux positif ?",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [220, 300],
+      "parameters": {
+        "rules": { "values": [
+          { "outputKey": "confirm", "renameOutput": true, "conditions": {
+            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+            "combinator": "and",
+            "conditions": [
+              { "id": "d1", "leftValue": "={{ $json.body.decision }}", "rightValue": "confirm", "operator": { "type": "string", "operation": "equals" } }
+            ] } },
+          { "outputKey": "false_positive", "renameOutput": true, "conditions": {
+            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+            "combinator": "and",
+            "conditions": [
+              { "id": "d2", "leftValue": "={{ $json.body.decision }}", "rightValue": "false_positive", "operator": { "type": "string", "operation": "equals" } }
+            ] } }
+        ] },
+        "options": {}
+      }
+    },
+    {
+      "id": "b3",
+      "name": "Confirmer + renseignement interne",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/cases/{{ $('Décision analyste').item.json.body.case_id }}/confirm?analyst={{ $('Décision analyste').item.json.body.analyst }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "b4",
+      "name": "Purge dans toutes les boîtes",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/cases/{{ $('Décision analyste').item.json.body.case_id }}/purge",
+        "options": { "timeout": 120000 }
+      }
+    },
+    {
+      "id": "b5",
+      "name": "Blocage DNS",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/cases/{{ $('Décision analyste').item.json.body.case_id }}/block-dns",
+        "options": {}
+      }
+    },
+    {
+      "id": "b6",
+      "name": "Notifier rapporteurs + destinataires",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1120, 200],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/cases/{{ $('Décision analyste').item.json.body.case_id }}/notify-confirmed",
+        "options": {}
+      }
+    },
+    {
+      "id": "b7",
+      "name": "Faux positif : clôturer + informer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 420],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/cases/{{ $('Décision analyste').item.json.body.case_id }}/false-positive?analyst={{ $('Décision analyste').item.json.body.analyst }}",
+        "options": {}
+      }
+    }
+  ],
+  "connections": {
+    "Décision analyste": { "main": [[ { "node": "Confirmé ou faux positif ?", "type": "main", "index": 0 } ]] },
+    "Confirmé ou faux positif ?": { "main": [
+      [ { "node": "Confirmer + renseignement interne", "type": "main", "index": 0 } ],
+      [ { "node": "Faux positif : clôturer + informer", "type": "main", "index": 0 } ]
+    ] },
+    "Confirmer + renseignement interne": { "main": [[ { "node": "Purge dans toutes les boîtes", "type": "main", "index": 0 } ]] },
+    "Purge dans toutes les boîtes": { "main": [[ { "node": "Blocage DNS", "type": "main", "index": 0 } ]] },
+    "Blocage DNS": { "main": [[ { "node": "Notifier rapporteurs + destinataires", "type": "main", "index": 0 } ]] }
+  }
+}

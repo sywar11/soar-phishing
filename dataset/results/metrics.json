@@ -1,0 +1,222 @@
+{
+  "main": {
+    "threshold": 20,
+    "tp": 133,
+    "fn": 67,
+    "fp": 49,
+    "tn": 317,
+    "precision": 0.731,
+    "recall": 0.665,
+    "f1": 0.696,
+    "accuracy": 0.795,
+    "fpr": 0.134
+  },
+  "strict": {
+    "threshold": 70,
+    "tp": 5,
+    "fn": 195,
+    "fp": 0,
+    "tn": 366,
+    "precision": 1.0,
+    "recall": 0.025,
+    "f1": 0.049,
+    "accuracy": 0.655,
+    "fpr": 0.0
+  },
+  "sweep": [
+    {
+      "threshold": 10,
+      "tp": 151,
+      "fn": 49,
+      "fp": 165,
+      "tn": 201,
+      "precision": 0.478,
+      "recall": 0.755,
+      "f1": 0.585,
+      "accuracy": 0.622,
+      "fpr": 0.451
+    },
+    {
+      "threshold": 20,
+      "tp": 133,
+      "fn": 67,
+      "fp": 49,
+      "tn": 317,
+      "precision": 0.731,
+      "recall": 0.665,
+      "f1": 0.696,
+      "accuracy": 0.795,
+      "fpr": 0.134
+    },
+    {
+      "threshold": 30,
+      "tp": 92,
+      "fn": 108,
+      "fp": 26,
+      "tn": 340,
+      "precision": 0.78,
+      "recall": 0.46,
+      "f1": 0.579,
+      "accuracy": 0.763,
+      "fpr": 0.071
+    },
+    {
+      "threshold": 40,
+      "tp": 59,
+      "fn": 141,
+      "fp": 14,
+      "tn": 352,
+      "precision": 0.808,
+      "recall": 0.295,
+      "f1": 0.432,
+      "accuracy": 0.726,
+      "fpr": 0.038
+    },
+    {
+      "threshold": 50,
+      "tp": 25,
+      "fn": 175,
+      "fp": 11,
+      "tn": 355,
+      "precision": 0.694,
+      "recall": 0.125,
+      "f1": 0.212,
+      "accuracy": 0.671,
+      "fpr": 0.03
+    },
+    {
+      "threshold": 60,
+      "tp": 15,
+      "fn": 185,
+      "fp": 1,
+      "tn": 365,
+      "precision": 0.938,
+      "recall": 0.075,
+      "f1": 0.139,
+      "accuracy": 0.671,
+      "fpr": 0.003
+    },
+    {
+      "threshold": 70,
+      "tp": 5,
+      "fn": 195,
+      "fp": 0,
+      "tn": 366,
+      "precision": 1.0,
+      "recall": 0.025,
+      "f1": 0.049,
+      "accuracy": 0.655,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 80,
+      "tp": 2,
+      "fn": 198,
+      "fp": 0,
+      "tn": 366,
+      "precision": 1.0,
+      "recall": 0.01,
+      "f1": 0.02,
+      "accuracy": 0.65,
+      "fpr": 0.0
+    },
+    {
+      "threshold": 90,
+      "tp": 1,
+      "fn": 199,
+      "fp": 0,
+      "tn": 366,
+      "precision": 1.0,
+      "recall": 0.005,
+      "f1": 0.01,
+      "accuracy": 0.648,
+      "fpr": 0.0
+    }
+  ],
+  "no_auth": {
+    "threshold": 20,
+    "tp": 133,
+    "fn": 67,
+    "fp": 49,
+    "tn": 317,
+    "precision": 0.731,
+    "recall": 0.665,
+    "f1": 0.696,
+    "accuracy": 0.795,
+    "fpr": 0.134
+  },
+  "by_family": {
+    "easy_ham": {
+      "n": 150,
+      "au_seuil_suspect": 4,
+      "au_seuil_malveillant": 0
+    },
+    "hard_ham": {
+      "n": 116,
+      "au_seuil_suspect": 34,
+      "au_seuil_malveillant": 0
+    },
+    "nazario_2024": {
+      "n": 200,
+      "au_seuil_suspect": 133,
+      "au_seuil_malveillant": 5
+    },
+    "spam": {
+      "n": 100,
+      "au_seuil_suspect": 11,
+      "au_seuil_malveillant": 0
+    }
+  },
+  "rule_frequency": {
+    "phishing": {
+      "link_text_mismatch": 7,
+      "account_action": 90,
+      "urgency": 33,
+      "credential_request": 54,
+      "display_name_spoof": 19,
+      "url_credential_path": 9,
+      "auth_all_pass": 98,
+      "url_redirect_wrapper": 16,
+      "url_shortener": 7,
+      "external_claims_internal": 20,
+      "html_attachment": 15,
+      "spf_softfail": 13,
+      "spf_fail": 10,
+      "reply_to_mismatch": 23,
+      "freemail_reply_to": 9,
+      "generic_greeting": 20,
+      "urgency_strong": 1,
+      "yara": 13,
+      "dkim_fail": 1,
+      "newsletter": 14,
+      "url_suspicious_tld": 6,
+      "payment_change": 2,
+      "dmarc_fail": 2,
+      "url_lookalike": 2,
+      "double_extension": 1,
+      "dangerous_extension": 1
+    },
+    "legit": {
+      "credential_request": 25,
+      "reply_to_mismatch": 40,
+      "external_claims_internal": 2,
+      "urgency": 30,
+      "link_text_mismatch": 10,
+      "account_action": 18,
+      "url_credential_path": 59,
+      "html_form": 46,
+      "display_name_spoof": 3,
+      "url_lookalike": 3,
+      "url_ip": 22,
+      "url_shortener": 1,
+      "freemail_reply_to": 2,
+      "payment_change": 3,
+      "sender_lookalike": 2,
+      "html_attachment": 1
+    }
+  },
+  "n": 566,
+  "split": "test",
+  "online": false,
+  "as_report": true
+}

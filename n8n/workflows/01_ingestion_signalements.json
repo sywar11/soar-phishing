@@ -1,0 +1,130 @@
+{
+  "id": "soarPhishIngest01",
+  "name": "01 - Phishing : ingestion des signalements",
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "nodes": [
+    {
+      "id": "a1",
+      "name": "Toutes les minutes",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300],
+      "parameters": { "rule": { "interval": [ { "field": "minutes", "minutesInterval": 1 } ] } }
+    },
+    {
+      "id": "a2",
+      "name": "Mailpit : signalements non lus",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 300],
+      "parameters": {
+        "url": "http://mailpit:8025/api/v1/search",
+        "sendQuery": true,
+        "queryParameters": { "parameters": [
+          { "name": "query", "value": "to:phishing@corp.local is:unread" },
+          { "name": "limit", "value": "50" }
+        ] },
+        "options": {}
+      }
+    },
+    {
+      "id": "a3",
+      "name": "Un élément par signalement",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [440, 300],
+      "parameters": { "fieldToSplitOut": "messages", "options": {} }
+    },
+    {
+      "id": "a4",
+      "name": "Analyse + score + regroupement",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [660, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/reports/mailpit/{{ $json.ID }}",
+        "options": { "timeout": 120000 }
+      }
+    },
+    {
+      "id": "a5",
+      "name": "Tri selon la route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [900, 300],
+      "parameters": {
+        "rules": { "values": [
+          { "outputKey": "benign", "renameOutput": true, "conditions": {
+            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+            "combinator": "or",
+            "conditions": [
+              { "id": "c1", "leftValue": "={{ $json.route }}", "rightValue": "benign", "operator": { "type": "string", "operation": "equals" } },
+              { "id": "c2", "leftValue": "={{ $json.route }}", "rightValue": "known_false_positive", "operator": { "type": "string", "operation": "equals" } }
+            ] } },
+          { "outputKey": "validation", "renameOutput": true, "conditions": {
+            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+            "combinator": "and",
+            "conditions": [
+              { "id": "c3", "leftValue": "={{ $json.route }}", "rightValue": "pending_validation", "operator": { "type": "string", "operation": "equals" } }
+            ] } },
+          { "outputKey": "campagne_connue", "renameOutput": true, "conditions": {
+            "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+            "combinator": "and",
+            "conditions": [
+              { "id": "c4", "leftValue": "={{ $json.route }}", "rightValue": "known_campaign", "operator": { "type": "string", "operation": "equals" } }
+            ] } }
+        ] },
+        "options": {}
+      }
+    },
+    {
+      "id": "a6",
+      "name": "Réponse : e-mail légitime",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 120],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/reports/{{ $json.report_id }}/reply?template=benign",
+        "options": {}
+      }
+    },
+    {
+      "id": "a7",
+      "name": "Accusé de réception (validation analyste)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 300],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/reports/{{ $json.report_id }}/reply?template=received",
+        "options": {}
+      }
+    },
+    {
+      "id": "a8",
+      "name": "Campagne déjà confirmée : réponse auto",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1160, 480],
+      "parameters": {
+        "method": "POST",
+        "url": "=http://analyzer:8000/api/cases/{{ $json.case_id }}/respond?analyst=n8n-auto",
+        "options": { "timeout": 120000 }
+      }
+    }
+  ],
+  "connections": {
+    "Toutes les minutes": { "main": [[ { "node": "Mailpit : signalements non lus", "type": "main", "index": 0 } ]] },
+    "Mailpit : signalements non lus": { "main": [[ { "node": "Un élément par signalement", "type": "main", "index": 0 } ]] },
+    "Un élément par signalement": { "main": [[ { "node": "Analyse + score + regroupement", "type": "main", "index": 0 } ]] },
+    "Analyse + score + regroupement": { "main": [[ { "node": "Tri selon la route", "type": "main", "index": 0 } ]] },
+    "Tri selon la route": { "main": [
+      [ { "node": "Réponse : e-mail légitime", "type": "main", "index": 0 } ],
+      [ { "node": "Accusé de réception (validation analyste)", "type": "main", "index": 0 } ],
+      [ { "node": "Campagne déjà confirmée : réponse auto", "type": "main", "index": 0 } ]
+    ] }
+  }
+}

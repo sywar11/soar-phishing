@@ -1,0 +1,153 @@
+# Projet 1 - SOAR Phishing : boîte de signalement, de l'e-mail à la purge
+#
+#   docker compose up -d --build                 -> stack de base (Mailpit, n8n, analyzer, DNS, GoPhish)
+#   docker compose --profile thehive up -d       -> + TheHive (Cassandra + Elasticsearch, ~3 Go RAM en plus)
+#
+# Ports exposés sur l'hôte :
+#   8025  Mailpit (UI + API)        1025  Mailpit SMTP
+#   5680  n8n (SOAR)                8000  Analyzer (API + tableau de bord analyste)
+#   3333  GoPhish admin (https)     8081  GoPhish serveur de phishing
+#   1053  DNS filtrant (CoreDNS)    9000  TheHive (profil "thehive")
+
+name: soar-phishing
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.27
+    container_name: soar-mailpit
+    restart: unless-stopped
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+      MP_DATABASE: /data/mailpit.db
+    volumes:
+      - mailpit-data:/data
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+  analyzer:
+    build: ./analyzer
+    container_name: soar-analyzer
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      MAILPIT_URL: http://mailpit:8025
+      SMTP_HOST: mailpit
+      SMTP_PORT: "1025"
+      DB_PATH: /data/soar.db
+      BLOCKLIST_PATH: /dns/blocklist.hosts
+      N8N_DECISION_WEBHOOK: http://n8n:5678/webhook/phishing-decision
+    volumes:
+      - analyzer-data:/data
+      - ./coredns:/dns
+      - ./dataset:/dataset
+      - ./analyzer/rules:/app/rules:ro
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mailpit
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    container_name: soar-n8n
+    restart: unless-stopped
+    environment:
+      N8N_SECURE_COOKIE: "false"
+      N8N_HOST: localhost
+      N8N_PORT: "5678"
+      WEBHOOK_URL: http://localhost:5680/
+      GENERIC_TIMEZONE: Europe/Paris
+      TZ: Europe/Paris
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_PERSONALIZATION_ENABLED: "false"
+    volumes:
+      - n8n-data:/home/node/.n8n
+      - ./n8n/workflows:/workflows:ro
+    ports:
+      - "5680:5678"
+    depends_on:
+      - analyzer
+
+  dns:
+    image: coredns/coredns:1.11.3
+    container_name: soar-dns
+    restart: unless-stopped
+    command: ["-conf", "/etc/coredns/Corefile"]
+    volumes:
+      - ./coredns:/etc/coredns
+    ports:
+      - "1053:53/udp"
+      - "1053:53/tcp"
+
+  gophish:
+    image: gophish/gophish:latest
+    container_name: soar-gophish
+    restart: unless-stopped
+    user: root   # le volume de données appartient à root : sans cela, GoPhish ne peut pas créer sa base
+    volumes:
+      - gophish-data:/opt/gophish/data
+    environment:
+      DB_FILE_PATH: /opt/gophish/data/gophish.db
+    ports:
+      - "3333:3333"
+      - "8081:80"
+    depends_on:
+      - mailpit
+
+  # ---------------- Profil optionnel : gestion de dossiers TheHive ----------------
+  cassandra:
+    image: cassandra:4.1
+    container_name: soar-cassandra
+    profiles: ["thehive"]
+    restart: unless-stopped
+    environment:
+      MAX_HEAP_SIZE: 1024M
+      HEAP_NEWSIZE: 256M
+      CASSANDRA_CLUSTER_NAME: TheHive
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.24
+    container_name: soar-elasticsearch
+    profiles: ["thehive"]
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: -Xms512m -Xmx512m
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+
+  thehive:
+    image: strangebee/thehive:5.4
+    container_name: soar-thehive
+    profiles: ["thehive"]
+    restart: unless-stopped
+    depends_on:
+      - cassandra
+      - elasticsearch
+    command:
+      - --secret
+      - "change-me-thehive-secret-please-0123456789"
+      - "--cql-hostnames"
+      - "cassandra"
+      - "--index-backend"
+      - "elasticsearch"
+      - "--es-hostnames"
+      - "elasticsearch"
+    environment:
+      JVM_OPTS: -Xms512m -Xmx1024m
+    ports:
+      - "9000:9000"
+
+volumes:
+  mailpit-data:
+  analyzer-data:
+  n8n-data:
+  gophish-data:
+  cassandra-data:
+  es-data:

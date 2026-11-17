@@ -1,0 +1,14 @@
+# Secrets et identifiants locaux : ne jamais publier
+.env
+identifiants_lab.txt
+
+# Python
+__pycache__/
+*.pyc
+
+# Les e-mails du corpus restent dans le volume Docker ; on refuse tout .eml ou .mbox par sécurité.
+# dataset/results/ (matrice, scores, noms de règles, sans contenu d'e-mail) est publié volontairement.
+*.eml
+*.mbox
+dataset/emails/
+dataset/raw/

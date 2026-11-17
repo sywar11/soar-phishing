@@ -1,0 +1,3 @@
+# Fins de ligne Linux pour tous les fichiers texte : les conteneurs Docker les lisent sous Linux
+* text=auto eol=lf
+*.pdf binary
