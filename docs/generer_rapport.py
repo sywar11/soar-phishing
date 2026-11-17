@@ -118,6 +118,7 @@ S += [Spacer(1, 3.5 * cm), Paragraph(esc(args.etablissement), st["sub"]), Paragr
       Paragraph("Automatisation de la réponse avec un SOAR", st["sub"]), Spacer(1, 3 * cm),
       Paragraph(f"Réalisé par : <b>{esc(args.auteur)}</b>", st["sub"]),
       Paragraph(f"Enseignant : <b>{esc(args.encadrant)}</b>", st["sub"]), Spacer(1, 8),
+      Paragraph("Code source : <b>https://github.com/sywar11/soar-phishing</b>", st["sub"]), Spacer(1, 8),
       Paragraph(esc(args.date), st["sub"]), PageBreak()]
 
 # ------------------------------------------------------------------ résumé + sommaire
@@ -397,7 +398,11 @@ S += LI(["Évaluer le score sur des e-mails légitimes récents et anonymisés, 
          "Connexion à Microsoft Graph ou à l'API Gmail pour une purge en production.",
          "Authentification du tableau de bord, de l'API et du webhook."])
 S += [H1("Annexe A : installation"),
-      CODE("cp .env.example .env\n"
+      P("Le code source est disponible sur le dépôt GitHub du projet, privé, avec un accès sur demande : "
+        "<b>https://github.com/sywar11/soar-phishing</b>."),
+      CODE("git clone https://github.com/sywar11/soar-phishing.git\n"
+           "cd soar-phishing\n"
+           "cp .env.example .env\n"
            "docker compose up -d --build\n"
            "docker exec soar-n8n n8n import:workflow --separate --input=/workflows\n"
            "docker exec soar-n8n n8n publish:workflow --id=soarPhishIngest01\n"
